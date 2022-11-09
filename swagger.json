@@ -1,0 +1,2809 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "HealthPass Data Submission API",
+    "description": "Swagger definition for HealthPass data submission API",
+    "version": "1.0.0"
+  },
+  "tags": [
+    {
+      "name": "users",
+      "description": "Manage users"
+    },
+    {
+      "name": "onboarding",
+      "description": "Manage user onboarding"
+    },
+    {
+      "name": "data",
+      "description": "Manage user data"
+    },
+    {
+      "name": "register-code",
+      "description": "Manage registration codes"
+    },
+    {
+      "name": "organization",
+      "description": "Manage organizations"
+    },
+    {
+      "name": "mapper",
+      "description": "Manage mapper"
+    }
+  ],
+  "servers": [
+    {
+      "url": "/api/v1/datasubmission",
+      "description": "CDT"
+    }
+  ],
+  "paths": {
+    "/users/login": {
+      "post": {
+        "tags": [
+          "users"
+        ],
+        "summary": "User login",
+        "description": "Login as a registered user",
+        "operationId": "userLogin",
+        "requestBody": {
+          "description": "Login credentials",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserLoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful user login",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserLoginResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Failed login due to invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicErrorMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/onboarding/validatecode/{regCode}": {
+      "get": {
+        "tags": [
+          "onboarding"
+        ],
+        "summary": "Validate user registration code",
+        "description": "Validate user onboarding registration code for specified entity",
+        "operationId": "validateCode",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "regCode",
+            "in": "path",
+            "description": "Registration code",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Specified entity",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserRegisterEntityRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/ValidCodeResponse"
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidCodeResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/onboarding/validatekey": {
+      "get": {
+        "tags": [
+          "onboarding"
+        ],
+        "summary": "Validate user public key",
+        "description": "Validate user onboarding public key for specified entity",
+        "operationId": "validateKey",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "x-hpass-datasubmission-key",
+            "in": "header",
+            "description": "Public key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Specified entity",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserRegisterEntityRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/ValidKeyResponse"
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidKeyResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/onboarding/": {
+      "post": {
+        "tags": [
+          "onboarding"
+        ],
+        "summary": "Create user registration file",
+        "description": "Create user onboarding registration file for specified entity",
+        "operationId": "createRegistration",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [],
+        "requestBody": {
+          "description": "User onboarding registration information",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserHolderUploadRegistrationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully created user registration",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserRegistrationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "onboarding"
+        ],
+        "summary": "Delete user registration",
+        "description": "Delete user onboarding registration for specified entity",
+        "operationId": "deleteRegistration",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "x-hpass-datasubmission-key",
+            "in": "header",
+            "description": "Public key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Specified entity",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserRegisterEntityRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully deleted user registration"
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidGetRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/onboarding/mfa/users/file": {
+      "post": {
+        "tags": [
+          "onboarding"
+        ],
+        "summary": "Upload user registration file",
+        "description": "Upload user registration file",
+        "operationId": "uploadUserRegistrationFile",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "description": "",
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "organization": {
+                    "type": "string"
+                  },
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully uploaded user registration file",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                      "message": {
+                        "type": "string"
+                      },
+                      "batchID": {
+                        "type": "string"
+                      }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/onboarding/mfa/registration-code/{regCode}": {
+      "post": {
+        "tags": [
+          "onboarding"
+        ],
+        "summary": "Validate user registration code, MFA flow",
+        "description": "Validate user onboarding registration code, MFA flow",
+        "operationId": "validateRegistrationCodeMFA",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "regCode",
+            "in": "path",
+            "description": "Registration code",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "organization",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "organization": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/ValidCodeResponse"
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidCodeResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/onboarding/mfa/verification-code/{verificationCode}": {
+      "post": {
+        "tags": [
+          "onboarding"
+        ],
+        "summary": "Validate verification code, MFA flow",
+        "description": "Validate verification code, MFA flow",
+        "operationId": "validateVerificationCodeMFA",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "verificationCode",
+            "in": "path",
+            "description": "Verification code",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "organization",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "organization": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/ValidCodeResponse"
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidCodeResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/onboarding/mfa/submit-registration": {
+      "post": {
+        "tags": [
+          "onboarding"
+        ],
+        "summary": "Submit user registration, MFA flow",
+        "description": "Submit user registration, MFA flow",
+        "operationId": "submitUserRegistrationMFA",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "description": "organization",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "organization": {
+                    "type": "string"
+                  },
+                  "registrationCode": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully created user registration",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserRegistrationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/data/submit": {
+      "post": {
+        "tags": [
+          "data"
+        ],
+        "summary": "Submit user registration data",
+        "description": "Submit user registration data to specified entity",
+        "operationId": "submitUserData",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "description": "User registration data",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserDataSubmissionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully submitted user registration data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDataSubmissionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Unable to submit user registration data or invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDataSubmissionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/data/upload": {
+      "post": {
+        "tags": [
+          "data"
+        ],
+        "summary": "Upload test data batch",
+        "description": "Upload test data batch",
+        "operationId": "uploadTestDataBatch",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "description": "",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/upLoadDataBatchBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully uploaded data batch",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                      "message": {
+                        "type": "string"
+                      },
+                      "batchID": {
+                        "type": "string"
+                      }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/data/upload/{credentialType}": {
+      "post": {
+        "tags": [
+          "data"
+        ],
+        "summary": "Upload credential data batch",
+        "description": "Upload credential data batch",
+        "operationId": "uploadCredentialDataBatch",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "description": "",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/upLoadDataBatchBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully uploaded data batch",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                      "message": {
+                        "type": "string"
+                      },
+                      "batchID": {
+                        "type": "string"
+                      }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/data/upload/file": {
+      "post": {
+        "tags": [
+          "data"
+        ],
+        "summary": "Upload test result file",
+        "description": "Upload test result file",
+        "operationId": "uploadTestResultFile",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "description": "",
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "organization": {
+                    "type": "string"
+                  },
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully uploaded test result file",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                      "message": {
+                        "type": "string"
+                      },
+                      "batchID": {
+                        "type": "string"
+                      }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/data/upload/file/{credentialType}": {
+      "post": {
+        "tags": [
+          "data"
+        ],
+        "summary": "Upload credentail file by credentialType",
+        "description": "Upload credentail file by credentialType",
+        "operationId": "uploadcredentialFile",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "description": "",
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "organization": {
+                    "type": "string"
+                  },
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully uploaded credential file",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                      "message": {
+                        "type": "string"
+                      },
+                      "batchID": {
+                        "type": "string"
+                      }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/data/{regEntity}/batches/report": {
+      "get": {
+        "tags": [
+          "data"
+        ],
+        "summary": "Get batch reports for a specified org and role",
+        "description": "Get batch reports for a specified org and role",
+        "operationId": "getAllBatchReport",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "regEntity",
+            "in": "path",
+            "description": "Registration entity",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "description": "Role",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved batch reports",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "payload": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/GetBatchReportResponse"
+                      }    
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidGetRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/data/{regEntity}/batches/{batchID}/report": {
+      "get": {
+        "tags": [
+          "data"
+        ],
+        "summary": "Get batch report for a specified org, role, and batchID",
+        "description": "Get batch report for a specified org, role, and batchID",
+        "operationId": "getBatchReport",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "regEntity",
+            "in": "path",
+            "description": "Registration entity",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "batchID",
+            "in": "path",
+            "description": "Batch ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved batch report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "payload": {
+                      "$ref": "#/components/schemas/GetBatchReportResponse"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidGetRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/data/{regEntity}/report": {
+      "get": {
+        "tags": [
+          "data"
+        ],
+        "summary": "Get report",
+        "description": "Get a report of credential stats, bounded by a start and end date",
+        "operationId": "getReport",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "regEntity",
+            "in": "path",
+            "description": "Registration entity",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "description": "Start date",
+            "required": true,
+            "schema": {
+              "type": "date"
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "description": "End date",
+            "required": true,
+            "schema": {
+              "type": "date"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Timezone offset in minutes (default 0, New York 300, Tokyo -540)",
+            "required": false,
+            "schema": {
+              "type": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetReportResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidGetRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/register-code/{regEntity}/upload": {
+      "post": {
+        "tags": [
+          "register-code"
+        ],
+        "summary": "Upload registration codes",
+        "description": "Upload registration codes for specified entity",
+        "operationId": "uploadRegistrationCodes",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "regEntity",
+            "in": "path",
+            "description": "Registration entity",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "expiresAt",
+            "in": "query",
+            "description": "Expiration date (seconds since Unix epoch)",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "expiresIn",
+            "in": "query",
+            "description": "Registration code lifespan (seconds)",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "User registration codes",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistrationCodesRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successfully uploaded registration codes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistrationCodesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/AllUploadedRegistrationCodesError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "409": {
+            "$ref": "#/components/responses/SomeUploadedRegistrationCodesError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/register-code/{regEntity}/generate/{numCodes}": {
+      "post": {
+        "tags": [
+          "register-code"
+        ],
+        "summary": "Generate registration codes",
+        "description": "Generate registration codes for specified entity",
+        "operationId": "generateRegistrationCodes",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "regEntity",
+            "in": "path",
+            "description": "Registration entity",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "numCodes",
+            "in": "path",
+            "description": "Number of registration codes",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "expiresAt",
+            "in": "query",
+            "description": "Expiration date (seconds since Unix epoch)",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "expiresIn",
+            "in": "query",
+            "description": "Registration code lifespan (seconds)",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successfully generated registration codes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistrationCodesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/AllGeneratedRegistrationCodesError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "409": {
+            "$ref": "#/components/responses/SomeGeneratedRegistrationCodesError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/register-code/{regEntity}/codes/{numCodes}": {
+      "get": {
+        "tags": [
+          "register-code"
+        ],
+        "summary": "Get registration codes",
+        "description": "Get registration codes for specified entity",
+        "operationId": "getRegistrationCodes",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "regEntity",
+            "in": "path",
+            "description": "Registration entity",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "numCodes",
+            "in": "path",
+            "description": "Number of registration codes",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Registration code status (new or used)",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully queried registration codes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistrationCodesGetResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidGetRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/organization/register": {
+      "post": {
+        "tags": [
+          "organization"
+        ],
+        "summary": "Onboard organization",
+        "description": "Onboard organization",
+        "operationId": "onboardOrganization",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "description": "Registered entity data",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterEntityRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successfully onboarded registered entity data"
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/organization": {
+      "put": {
+        "tags": [
+          "organization"
+        ],
+        "summary": "Update organization",
+        "description": "Update data for registered entity",
+        "operationId": "updateOrganization",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "description": "Registered entity data",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterEntityRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successfully updated registered entity data"
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "organization"
+        ],
+        "summary": "Get a list of all registered organizations",
+        "description": "Get a list of all registered organizations",
+        "operationId": "getOrganization",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved registered organizations"
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/organization/{regEntity}/regconfig": {
+      "get": {
+        "tags": [
+          "organization"
+        ],
+        "summary": "Get organization's user registration configuration",
+        "description": "Get organization's user registration configuration",
+        "operationId": "getOrganizationUserRegistrationConfiguration",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "regEntity",
+            "in": "path",
+            "description": "Registration entity",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved user registration configuration"
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/organization/{regEntity}/displayschemaid": {
+      "get": {
+        "tags": [
+          "organization"
+        ],
+        "summary": "Get organization's display schema id",
+        "description": "Get organization's display schema id",
+        "operationId": "getDisplaySchemaID",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "regEntity",
+            "in": "path",
+            "description": "Registration entity",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved display schema id"
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidGetRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/organization/{regEntity}/consentReceipt/{holderId}": {
+      "get": {
+        "tags": [
+          "organization"
+        ],
+        "summary": "Get organization's consent receipt for the holder",
+        "description": "Get organization's consent receipt for the holder",
+        "operationId": "getConsentReceipt",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "regEntity",
+            "in": "path",
+            "description": "Registration entity",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "holderId",
+            "in": "path",
+            "description": "Holder id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved consent receipt"
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidGetRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/organization/{regEntity}/consentRevoke/{holderId}": {
+      "get": {
+        "tags": [
+          "organization"
+        ],
+        "summary": "Get organization's consent revoke for the holder",
+        "description": "Get organization's consent revoke for the holder",
+        "operationId": "getConsentRevoke",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "regEntity",
+            "in": "path",
+            "description": "Registration entity",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "holderId",
+            "in": "path",
+            "description": "Holder id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved consent revoke"
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidGetRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/organization/{regEntity}": {
+      "delete": {
+        "tags": [
+          "organization"
+        ],
+        "summary": "Delete organization",
+        "description": "Delete data for registered entity",
+        "operationId": "deleteOrganization",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "regEntity",
+            "in": "path",
+            "description": "Registration entity",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully deleted registered entity data"
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidGetRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/organization/client/register": {
+      "post": {
+        "tags": [
+          "organization"
+        ],
+        "summary": "Onboard organization client",
+        "description": "Onboard organization client",
+        "operationId": "onboardClient",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "description": "Onboarded organization client",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "organization": {
+                    "type": "string"
+                  },
+                  "clientName": {
+                    "type": "string"
+                  },
+                  "notifyTextDataIngestResultAndroid": {
+                    "type": "string"
+                  },
+                  "notifyTextDataIngestResultiOS": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successfully onboarded organization client"
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/organization/client": {
+      "put": {
+        "tags": [
+          "organization"
+        ],
+        "summary": "Update organization client",
+        "description": "Update organization client",
+        "operationId": "updateClient",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "description": "Updated organization client",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "organization": {
+                    "type": "string"
+                  },
+                  "clientName": {
+                    "type": "string"
+                  },
+                  "notifyTextDataIngestResultAndroid": {
+                    "type": "string"
+                  },
+                  "notifyTextDataIngestResultiOS": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully updated organization client"
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/cos/{regEntity}": {
+      "get": {
+        "tags": [
+          "cos"
+        ],
+        "summary": "Get file names from organization COS bucket",
+        "description": "Get file names from organization COS bucket",
+        "operationId": "getCOSFileNames",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "regEntity",
+            "in": "path",
+            "description": "Registration entity",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved file names from COS bucket"
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidGetRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/cos/{regEntity}/owner/{holderId}": {
+      "get": {
+        "tags": [
+          "cos"
+        ],
+        "summary": "Get all files from organization COS bucket for a holder",
+        "description": "Get all files from organization COS bucket for a holder",
+        "operationId": "getCOSFilesByHolderId",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "regEntity",
+            "in": "path",
+            "description": "Registration entity",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "holderId",
+            "in": "path",
+            "description": "Owner",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "description": "Start date",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "example": "2021-03-20"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "description": "End date",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "example": "2021-04-15"
+            }
+          },
+          {
+            "name": "publicKeyType",
+            "in": "query",
+            "description": "Type of public key",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "spki",
+                "pkcs1"
+              ]
+            }
+          },
+          {
+            "name": "signatureValue",
+            "in": "query",
+            "description": "Signature value",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved all items from COS bucket for a holder"
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidGetRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/cos/{regEntity}/{filename}": {
+      "get": {
+        "tags": [
+          "cos"
+        ],
+        "summary": "Get file from organization COS bucket",
+        "description": "Get file from organization COS bucket",
+        "operationId": "getCOSFile",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "regEntity",
+            "in": "path",
+            "description": "Registration entity",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filename",
+            "in": "path",
+            "description": "File name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved file from COS bucket"
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidGetRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "cos"
+        ],
+        "summary": "Delete file from organization COS bucket",
+        "description": "Delete file from organization COS bucket",
+        "operationId": "deleteCOSFile",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "regEntity",
+            "in": "path",
+            "description": "Registration entity",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filename",
+            "in": "path",
+            "description": "File name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully deleted file from COS bucket"
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidGetRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/mapper/": {
+      "post": {
+        "tags": [
+          "mapper"
+        ],
+        "summary": "Create mapper",
+        "description": "Create mapper",
+        "operationId": "createMapper",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [],
+        "requestBody": {
+          "description": "Create mapper",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/mapperRegistrationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully created mapper",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/mapperRegistrationRequest"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "mapper"
+        ],
+        "summary": "Get all mappers",
+        "description": "Get all mappers",
+        "operationId": "getAllMappers",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successfully get mappers",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/allMappers"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/mapper/{mapperName}": {
+      "put": {
+        "tags": [
+          "mapper"
+        ],
+        "summary": "Update mapper by sepecfied mapperName",
+        "description": "Update mapper by sepecfied mapperName",
+        "operationId": "updateMapperByMapperName",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters":[
+          {
+            "name": "mapperName",
+            "in": "path",
+            "description": "mapper Name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Specified mapper",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/mapperRegistrationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully update mapper by specified mapperName",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/mapperRegistrationRequest"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "mapper"
+        ],
+        "summary": "Delete specified mapper by mapperName",
+        "description": "Delete specified mapper by mapperName",
+        "operationId": "deleteMapperByMapperName",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "mapperName",
+            "in": "path",
+            "description": "mapper Name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully deleted specified mapper"
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidGetRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "UserLoginRequest": {
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        }
+      },
+      "UserLoginResponse": {
+        "type": "object",
+        "properties": {
+          "access_token": {
+            "type": "string"
+          },
+          "id_token": {
+            "type": "string"
+          },
+          "token_type": {
+            "type": "string"
+          },
+          "expires_in": {
+            "type": "integer"
+          },
+          "scope": {
+            "type": "string"
+          }
+        }
+      },
+      "UserValidCodeResponse": {
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "UserInvalidCodeResponse": {
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "UserRegistrationRequest": {
+        "type": "object",
+        "example" : {
+          "registrationCode": "Gjasfb6wvHBQf",
+          "publicKey": "usfghqibwergfn98rorgby9bvqbd8o9egu8owbgnt",
+          "gender": "female",
+          "ageRange": "45-54",
+          "race": [ "White/Caucasian" ],
+          "location": "US-TX"
+        }
+      },
+      "UserHolderUploadRegistrationRequest": {
+        "type": "object",
+        "example": {
+          "organization": "organization_name",
+          "registrationCode": "registrationCode",
+          "id": "usfghqibwergfn98rorgby9bvqbd8o9egu8owbgnt",
+          "givenName": "John",
+          "familyName": "Wilson",
+          "passengerNumber": "12345",
+          "location": "US-TX"
+        }
+      },
+      "UserRegisterEntityRequest": {
+        "type": "object",
+        "example": {
+          "organization": "organization_name"
+        }
+      },
+      "UserRegistrationResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "payload": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        }
+      },
+      "RegistrationCodesRequest": {
+        "type": "object",
+        "required": [
+          "registrationCodes"
+        ],
+        "properties": {
+          "registrationCodes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "RegistrationCodesResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "docs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "registerCode": {
+                  "type": "string"
+                },
+                "expirationTimestamp": {
+                  "type": "string"
+                },
+                "createdTimestamp": {
+                  "type": "string"
+                },
+                "updatedTimestamp": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string"
+                },
+                "reason": {
+                  "type": "string"
+                },
+                "registerCode": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "RegistrationCodesGetResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "docs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "registerCode": {
+                  "type": "string"
+                },
+                "expirationTimestamp": {
+                  "type": "string"
+                },
+                "createdTimestamp": {
+                  "type": "string"
+                },
+                "updatedTimestamp": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "UserDataSubmissionRequest": {
+        "type": "object",
+        "required": [
+          "organization",
+          "publicKey",
+          "publicKeyType",
+          "documentId"
+        ],
+        "properties": {
+          "organization": {
+            "type": "string"
+          },
+          "publicKey": {
+            "type": "string"
+          },
+          "publicKeyType": {
+            "type": "string"
+          },
+          "documentId": {
+            "type": "string"
+          }
+        },
+        "example" : {
+          "organization": "organization_name",
+          "publicKey": "usfghqibwergfn98rorgby9bvqbd8o9egu8owbgnt",
+          "publicKeyType": "spki",
+          "documentId": "123456789jhgfd4"
+        }
+      },
+      "UserDataSubmissionResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "payload": {
+            "type": "object",
+            "properties": {
+              "credentialsProcessed": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ValidCredentialInfo"
+                }
+              },
+              "credentialsNotProcessed": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/InvalidCredentialInfo"
+                }
+              }
+            }
+          }
+        }
+      },
+      "ValidCredentialInfo": {
+        "type": "object",
+        "properties": {
+          "credentialType": {
+            "type": "string"
+          },
+          "credentialId": {
+            "type": "string"
+          }
+        }
+      },
+      "InvalidCredentialInfo": {
+        "type": "object",
+        "properties": {
+          "credentialType": {
+            "type": "string"
+          },
+          "credentialId": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      },
+      "RegisterEntityRequest": {
+        "type": "object",
+        "example": {
+          "entity": "organization_name",
+          "entityType": "holder-upload",
+          "name": "organization_name",
+          "contact": "support@org.com",
+          "website": "https://www.org.com/",
+          "privacyPolicy": "https://www.org.com/about-us/privacy-policy",
+          "userAgreement": "TBD",
+          "services": [
+            {
+                "service": "upload",
+                "purposes": [
+                    {
+                        "purpose": "TBD"
+                    }
+                ]
+            }
+          ],
+          "consentInfo": {
+            "version": "ISO/IEC 29184:2020",
+            "jurisdiction": "US",
+            "language": "en",
+            "collectionMethod": "direct",
+            "consentType": {
+              "explicit": true
+            },
+            "termination": "Instructions for how to terminate",
+            "thirdPartyTransfer": false,
+            "principal": {
+              "id": "",
+              "key": ""
+            },
+            "controller": {
+              "name": "organization_name",
+              "address": {
+                "line": "12345 Rockville rd",
+                "city": "NYC",
+                "state": "NY",
+                "postalCode": "12345",
+                "country": "United States"
+              },
+              "email": "support@org.com",
+              "website": "https://www.org.com"
+            },
+            "privacyPolicy": "https://www.org.com/privacypolicy",
+            "services": [
+              {
+                "description": "ORG service",
+                "purposes": [
+                  {
+                    "description": "ORG purpose TBD.",
+                    "purposeCategory": {
+                      "research": true,
+                      "service": true
+                    },
+                    "piiCategory": {
+                      "medical": true
+                    }
+                  }
+                ]
+              }
+            ],
+            "consentId": "9de1154e-b110-4072-9fa1-adab960b150c",
+            "consentTimestamp": 1620227004
+          },
+          "profileSchema": "did:hpass:59cd606341eb4a4a6c1a25d94a5f842ecf83ccd441dbda8abcd9274c9acd9334:67cba75b1719b5efba1addd32602f827fd378f2654288b1a4e381f8dddf40af3;id=holder-upload-contact;version=0.1",
+          "userSchema": "did:hpass:59cd606341eb4a4a6c1a25d94a5f842ecf83ccd441dbda8abcd9274c9acd9334:67cba75b1719b5efba1addd32602f827fd378f2654288b1a4e381f8dddf40af3;id=ncl-upload-id;version=0.3",
+          "displaySchema": "did:hpass:59cd606341eb4a4a6c1a25d94a5f842ecf83ccd441dbda8abcd9274c9acd9334:67cba75b1719b5efba1addd32602f827fd378f2654288b1a4e381f8dddf40af3;id=ncl-upload-id;version=0.3",
+          "profileCredentialExpiry": 31536000,
+          "userCredentialExpiry": 31536000,
+          "issuerId": "hpass.issuer1",
+          "mapper": {
+            "profileSchema": {
+              "name": "name",
+              "contact": "contact",
+              "website": "website",
+              "services": "services",
+              "privacyPolicy": "privacyPolicy",
+              "userAgreement": "userAgreement"
+            },
+            "userSchema": {
+              "name": {
+                "familyName": "familyName",
+                "givenName": "givenName"
+              },
+              "location": "location",
+              "passengerNumber": "123456",
+              "id": "publicKey",
+              "registrationCode": "registrationCode"
+            },
+            "consentSchema": {
+              "version": "version",
+              "jurisdiction": "jurisdiction",
+              "language": "language",
+              "collectionMethod": "collectionMethod",
+              "principal": "principal",
+              "controller": "controller",
+              "privacyPolicy": "privacyPolicy",
+              "consentType": "consentType",
+              "termination": "termination",
+              "thirdPartyTransfer": "thirdPartyTransfer",
+              "services": "services"
+            },
+            "consentRevokeSchema": {
+              "version": "version",
+              "jurisdiction": "jurisdiction",
+              "language": "language",
+              "principal": "principal",
+              "controller": "controller"
+            }
+          },
+          "userRegistrationConfig": {
+            "org": "organization_name",
+            "entityType": "holder-upload",
+            "flow": {
+              "registrationCodeAuth": true,
+              "mfaAuth": false,
+              "showUserAgreement": true,
+              "showRegistrationForm": true
+            },
+            "userAgreement": "<b>user agreement</b> and <i>Terms and Conditions</i> text goes here.",
+            "registrationForm": {
+              "givenName": {
+                "type": "string",
+                "displayType": "Text",
+                "order": "02",
+                "required": true,
+                "minLength": 2,
+                "maxLength": 32,
+                "visible": true
+              },
+              "id": {
+                "type": "string",
+                "displayType": "Text",
+                "visible": false
+              },
+              "registrationCode": {
+                "type": "string",
+                "displayType": "Text",
+                "visible": false
+              },
+              "familyName": {
+                "type": "string",
+                "displayType": "Text",
+                "order": "03",
+                "required": true,
+                "minLength": 2,
+                "maxLength": 32,
+                "visible": true
+              },
+              "passengerNumber": {
+                "type": "string",
+                "displayType": "Text",
+                "order": "01",
+                "required": true,
+                "minLength": 2,
+                "maxLength": 16,
+                "visible": true
+              },
+              "location": {
+                "type": "string",
+                "displayType": "Text",
+                "order": "04",
+                "pattern": "^[a-zA-Z0]{2}[\\-][a-zA-Z0-9]+$",
+                "required": true,
+                "minLength": 2,
+                "maxLength": 2,
+                "visible": true
+              }
+            }
+          }
+        }
+      },
+      "GetBatchReportResponse": {
+        "type": "object",
+        "properties": {
+          "batchID": {
+            "type": "string"
+          },
+          "submittedTimestamp": {
+            "type": "string"
+          },
+          "fileName": {
+            "type": "string"
+          },
+          "rowCount": {
+            "type": "string"
+          },
+          "successCountTotal": {
+            "type": "integer"
+          },
+          "failureCountTotal": {
+            "type": "integer"
+          },
+          "failedRows": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "batchFailureMessages": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "GetReportResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "payload": {
+            "type": "object"
+          }
+        }
+      },
+      "BasicErrorMessage": {
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "BasicMessage": {
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "allMappers":{
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/mapperRegistrationRequest"
+        }
+      },
+      "mapperRegistrationRequest": {
+        "type": "object",
+        "example":{
+        "mapperId": "mapperId",
+        "mapperName": "mapperName",
+        "type":"type",
+        "mapper": {
+            "resourceType": "resourceType",
+            "patient": {
+              "resourceType": "resourceType",
+              "identifier": {
+                "system": "{{credentialSubject.subject.identity[0].system}}",
+                "type": "{{credentialSubject.subject.identity[0].type}}",
+                "value": "{{credentialSubject.subject.identity[0].value}}"
+              },
+              "name": [
+                {
+                  "family": "{{credentialSubject.subject.name.family}}",
+                  "given": "{{credentialSubject.subject.name.given}}"
+                }
+              ],
+              "gender": "{{credentialSubject.subject.gender}}",
+              "birthDate": "{{credentialSubject.subject.birthDate}}",
+              "address": [
+                {
+                  "text": "{{credentialSubject.subject.address}}"
+                }
+              ],
+              "telecom": [
+                {
+                  "system": "phone",
+                  "value": "{{credentialSubject.subject.phone}}"
+                },
+                {
+                  "system": "email",
+                  "value": "{{credentialSubject.subject.email}}"
+                }
+              ]
+            },
+            "lotNumber": "{{credentialSubject.lotNumber}}",
+            "manufacturer": "{{credentialSubject.manufacturer}}",
+            "occurrenceDateTime": "{{credentialSubject.occurrenceDateTime}}",
+            "status": "{{credentialSubject.status}}",
+            "vaccineCode": "{{credentialSubject.vaccineCode}}"
+          }
+        }
+      },
+      "upLoadDataBatchBody" : {
+        "type": "object",
+        "example": {
+          "organization": "organization",
+          "batch": [
+              {
+                  "id": "id",
+                  "clientName": "clientName",
+                  "testType": "testType",
+                  "testId": "testId",
+                  "familyName": "familyName",
+                  "givenName": "givenName", 
+                  "testResult": "testResult",
+                  "date": "2021-01-28",
+                  "mobile": "2145555555"
+              }
+          ]
+        }
+      }
+    },
+    "responses": {
+      "InvalidRequestError": {
+        "description": "Missing or invalid required fields in request body",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/BasicErrorMessage"
+            }
+          }
+        }
+      },
+      "InvalidGetRequestError": {
+        "description": "Invalid fields in request",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/BasicErrorMessage"
+            }
+          }
+        }
+      },
+      "UnauthorizedError": {
+        "description": "Logged in user is unauthorized to make this request",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/BasicErrorMessage"
+            }
+          }
+        }
+      },
+      "NotFoundError": {
+        "description": "Resource was not found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/BasicErrorMessage"
+            }
+          }
+        }
+      },
+      "ServerError": {
+        "description": "Unexpected server error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/BasicErrorMessage"
+            }
+          }
+        }
+      },
+      "ValidCodeResponse": {
+        "description": "Code valid for use",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/BasicMessage"
+            }
+          }
+        }
+      },
+      "InvalidCodeResponse": {
+        "description": "Code not valid for use or user input error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/BasicErrorMessage"
+            }
+          }
+        }
+      },
+      "ValidKeyResponse": {
+        "description": "Public key valid for use",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/BasicMessage"
+            }
+          }
+        }
+      },
+      "InvalidKeyResponse": {
+        "description": "Public key already in use or user input error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/BasicErrorMessage"
+            }
+          }
+        }
+      },
+      "AllUploadedRegistrationCodesError": {
+        "description": "Unable to upload any registration codes",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/RegistrationCodesResponse"
+            }
+          }
+        }
+      },
+      "SomeUploadedRegistrationCodesError": {
+        "description": "Unable to upload some registration codes",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/RegistrationCodesResponse"
+            }
+          }
+        }
+      },
+      "AllGeneratedRegistrationCodesError": {
+        "description": "Unable to generate any registration codes",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/RegistrationCodesResponse"
+            }
+          }
+        }
+      },
+      "SomeGeneratedRegistrationCodesError": {
+        "description": "Unable to generate some registration codes",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/RegistrationCodesResponse"
+            }
+          }
+        }
+      }
+    }
+  }
+}

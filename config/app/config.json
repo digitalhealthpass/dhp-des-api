@@ -1,0 +1,75 @@
+{
+    "context_root": "/api/v1/datasubmission",
+    "log": {
+        "name": "console",
+        "level": "debug"
+    },
+    "hpassAPI": {
+        "hostname": "https://sandbox1.wh-hpass.dev.acme.com/api/v1/hpass"
+    },
+    "postboxAPI": {
+        "hostname": "https://sandbox1.wh-hpass.dev.acme.com/api/v1/postbox"
+    },
+    "verifierConfigAPI": {
+        "hostname": "https://sandbox1.wh-hpass.dev.acme.com/api/v1/verifier/config/api/v1"
+    },
+    "meteringAPI": {
+        "hostname": "https://sandbox1.wh-hpass.dev.acme.com/api/v1/metering"
+    },
+    "appID": {
+        "retries": 1,
+        "retryDelay": 3000,
+        "timeout": 10000
+    },
+    "keyProtect": {
+        "retries": 1,
+        "retryDelay": 3000,
+        "timeout": 10000
+    },
+    "timeout": 20000,
+    "registrationCode": {
+        "validDays": 14,
+        "minLength": 5,
+        "maxLength": 64,
+        "duplicateCodeRetry": 5
+    },
+    "verificationCode": {
+        "validMinutes": 10
+    },
+    "csv": {
+        "batchMaxErrorThreshold": 20,
+        "chunkSize": 200,
+        "userListRowMax": 4000,
+        "testResultRowMax": 4000
+    },
+    "cos": {
+        "bucketExpirationDays": 30,
+        "cronSchedule": "0 */1 * * *",
+        "expirationJobEnabled": true,
+        "runCronMinutes": 720,
+        "staleRunMinutes": 30,
+        "locationConstraint": "us-south-standard",
+        "endpoint": "s3.us-south.cloud-object-storage.appdomain.cloud",
+        "authEndpoint": "https://iam.cloud.ibm.com/oidc/token",
+        "connectTimeout": 5000,
+        "timeout": 10000,
+        "maxRetries": 3
+    },
+    "mail": {
+        "mailEnabled": "true",
+        "connectTimeout": 3000,
+        "timeout": 3000,
+        "maxRetries": 3,
+        "retryDelay": 5000
+    },
+    "cache": {
+        "cacheEnabled": true,
+        "options": {
+            "max": 1000,
+            "maxAge": 3600,
+            "ttlAutopurge": true,
+            "ttlResolution": 60
+        }
+    },
+    "cronSchedulerEnabled": true
+}

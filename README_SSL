@@ -1,0 +1,23 @@
+For deploy from local pc
+1. Create env variables e.g.:
+
+export WHC_COMMONS_BRANCH=stable-3.4.0
+export WHC_COMMONS_ORG=whc-toolchain
+export CLUSTER_NAMESPACE=hpass-devops-ns-01
+export CLUSTER_NAME=hpass-dev-1
+export CHART_NAME=07-dhp-des-api
+export REGION=us-east
+export gitApiKey=<Git PAC>
+export RESOURCE_GROUP=hpass-dev-wdc-cloudsvc
+export IBM_CLOUD_API_KEY=<VPC API KEY>
+export GITHUB_ENV_ORG=HealthPass
+
+2. Run preDeploy.sh script
+3. Generate ssl cert and key:
+CN=dhp-des-api-svc
+key file name server.key
+cert file name server.cert
+4. copy the file to:
+healthpass-cicd-toolchain-umbrella/wh-hpass/07-dhp-des-api/chart/07-dhp-des-api/configs/
+5. Run helm install from directory  healthpass-cicd-toolchain-umbrella/wh-hpass/07-dhp-des-api/chart/07-dhp-des-api/ e.g.:
+ helm install -n hpass-devops-ns-1 --values override.yaml testds .

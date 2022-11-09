@@ -1,0 +1,4 @@
+{
+    "include": ["controllers/**", "helpers/**"],
+    "exclude": ["controllers/user.js", "helpers/app-id-helper.js", "helpers/constants.js", "helpers/tls-helper.js"]
+}
