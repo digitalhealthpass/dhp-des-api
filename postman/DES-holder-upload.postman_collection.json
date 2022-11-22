@@ -1,0 +1,1555 @@
+{
+	"info": {
+		"_postman_id": "7fcabe9b-5e86-4f23-8f2f-e8d4b9238c1a",
+		"name": "DES-holder-upload",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Start",
+			"item": [
+				{
+					"name": "healthcheck - set variables",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"let uuid = require('uuid');",
+									"",
+									"let uniqueId=\"\";",
+									"var charset = \"abcdefghijklmnopqrstuvwxyz0123456789\";",
+									"    for( var i=0; i<8; i++ )",
+									"        uniqueId += charset.charAt(Math.floor(Math.random() * charset.length));    ",
+									"",
+									"console.log('uniqueId = ', uniqueId);",
+									"",
+									"let bucketName = 'pt' + uniqueId;",
+									"",
+									"pm.environment.set(\"DATASUBMISSION_ORG\", \"testorg\");",
+									"",
+									"let uuidTest = uuid.v4();",
+									"let uuidCodeValid1 = uuidTest + '-code1';",
+									"let uuidCodeValid2 = uuidTest + '-code2';",
+									"",
+									"let uuidKey1 = uuidTest + '-key1';",
+									"let uuidKey2 = uuidTest + '-key2';",
+									"",
+									"pm.globals.set(\"uuidCodeValid1\", uuidCodeValid1);",
+									"pm.globals.set(\"uuidCodeValid2\", uuidCodeValid2);",
+									"",
+									"pm.globals.set(\"uuidKey1\", uuidKey1);",
+									"pm.globals.set(\"uuidKey2\", uuidKey2);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"DES Upload - health check\", function () {\r",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 404]);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{HP_API_AUTH_TOKEN}}"
+							}
+						],
+						"url": {
+							"raw": "{{DATASUBMISSION_API}}/health",
+							"host": [
+								"{{DATASUBMISSION_API}}"
+							],
+							"path": [
+								"health"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "login hpass admin",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.globals.unset(\"HP_API_AUTH_TOKEN\");"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Body matches string\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"token\");",
+									"});",
+									"",
+									"let tokenStr = pm.response.json();",
+									"//console.log(tokenStr);",
+									"",
+									"pm.globals.set(\"HP_API_AUTH_TOKEN\", \"Bearer \" + tokenStr.access_token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"sample@poc.com\",\n    \"password\": \"update-password\"\n}"
+						},
+						"url": {
+							"raw": "{{DATASUBMISSION_API}}/users/login",
+							"host": [
+								"{{DATASUBMISSION_API}}"
+							],
+							"path": [
+								"users",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Onboard Organization (Admin)",
+			"item": [
+				{
+					"name": "register organization",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code matches\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{HP_API_AUTH_TOKEN}}"
+							},
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "x-hpass-disable-appid-create-roles",
+								"value": "false",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"entity\": \"{{DATASUBMISSION_ORG}}\",\n    \"entityType\": \"holder-upload\",\n    \"name\": \"Test organization name.\",\n    \"contact\": \"support@testorg.com\",\n    \"website\": \"https://www.testorg.com/\",\n    \"privacyPolicy\": \"https://www.testorg.com/about-us/privacy-policy\",\n    \"userAgreement\": \"TBD\",\n    \"services\": [\n        {\n            \"service\": \"upload\",\n            \"purposes\": [\n                {\n                    \"purpose\": \"TBD\"\n                }\n            ]\n        }\n    ],\n    \"consentInfo\": {\n        \"proof\": {},\n        \"version\": \"ISO/IEC 29184:2020\",\n        \"jurisdiction\": \"US\",\n        \"language\": \"en\",\n        \"piiPrincipalId\": \"PK\",\n        \"piiControllers\": [\n            {\n                \"piiController\": \"Test Org\",\n                \"onbehalf\": true,\n                \"contact\": \"John Smith, Test Org, Chief Data Privacy Officer\",\n                \"address\": {\n                    \"line\": \"12345 Rockville rd\",\n                    \"city\": \"CityName\",\n                    \"state\": \"NY\",\n                    \"postalCode\": \"12345\",\n                    \"country\": \"United States\"\n                },\n                \"email\": \"support@testorg.com\",\n                \"phone\": \"+13014964000\",\n                \"piiControllerUrl\": \"https://www.testorg.com\"\n            }\n        ],\n        \"policyUrl\": \"https://www.testorg.com/privacypolicy\",\n        \"services\": [\n            {\n                \"service\": \"TestOrg\",\n                \"purposes\": [\n                    {\n                        \"purpose\": \"purpose TBD.\",\n                        \"consentType\": \"EXPLICIT\",\n                        \"purposeCategory\": \"Validate\",\n                        \"piiCategory\": [\n                            \"Personal Data\"\n                        ],\n                        \"termination\": \"Owner-mediated via Digital Wallet\",\n                        \"thirdPartyDisclosure\": false\n                    }\n                ]\n            }\n        ],\n        \"sensitive\": false,\n        \"spiCat\": [\n            \"\"\n        ]\n    },\n    \"profileSchema\": \"TBD\",\n    \"userSchema\": \"TBD\",\n    \"displaySchema\": \"TBD\",\n    \"profileCredentialExpiry\": 31536000,\n    \"userCredentialExpiry\": 31536000,\n    \"issuerId\": \"TBD\",\n    \"mapper\": {\n        \"profileSchema\": {\n            \"name\": \"{{#? name}}\",\n            \"contact\": \"{{#? contact}}\",\n            \"website\": \"{{#? website}}\",\n            \"services\": \"{{#? services}}\",\n            \"privacyPolicy\": \"{{#? privacyPolicy}}\",\n            \"userAgreement\": \"{{#? userAgreement}}\"\n        },\n        \"userSchema\": {\n            \"name\": {\n                \"familyName\": \"{{#? familyName}}\",\n                \"givenName\": \"{{#? givenName}}\"\n            },\n            \"location\": \"{{#? location}}\",\n            \"passengerNumber\": \"{{#? passengerNumber}}\",\n            \"id\": \"{{#? id}}\",\n            \"registrationCode\": \"{{#? registrationCode}}\"\n        },\n        \"consentSchema\": {\n            \"proof\": \"{{#? proof}}\",\n            \"version\": \"{{#? version}}\",\n            \"jurisdiction\": \"{{#? jurisdiction}}\",\n            \"language\": \"{{#? language}}\",\n            \"piiPrincipalId\": \"{{#? piiPrincipalId}}\",\n            \"piiControllers\": \"{{#? piiControllers}}\",\n            \"policyUrl\": \"{{#? policyUrl}}\",\n            \"services\": \"{{#? services}}\",\n            \"sensitive\": \"{{sensitive}}\",\n            \"spiCat\": \"{{#? spiCat}}\"\n        },\n        \"consentRevokeSchema\": {\n            \"piiControllers\": \"{{#? piiControllers}}\",\n            \"services\": \"{{#? services}}\"\n        }\n    },\n    \"userRegistrationConfig\": {\n        \"org\": \"{{DATASUBMISSION_ORG}}\",\n        \"entityType\": \"holder-upload\",\n        \"flow\": {\n            \"registrationCodeAuth\": true,\n            \"mfaAuth\": false,\n            \"showUserAgreement\": true,\n            \"showRegistrationForm\": true\n        },\n        \"userAgreement\": \"<b>user agreement</b> and <i>Terms and Conditions</i> text goes here.\",\n        \"registrationForm\": {\n            \"givenName\": {\n                \"type\": \"string\",\n                \"displayType\": \"Text\",\n                \"order\": \"02\",\n                \"required\": true,\n                \"minLength\": 2,\n                \"maxLength\": 32,\n                \"visible\": true\n            },\n            \"id\": {\n                \"type\": \"string\",\n                \"displayType\": \"Text\",\n                \"visible\": false\n            },\n            \"registrationCode\": {\n                \"type\": \"string\",\n                \"displayType\": \"Text\",\n                \"visible\": false\n            },\n            \"familyName\": {\n                \"type\": \"string\",\n                \"displayType\": \"Text\",\n                \"order\": \"03\",\n                \"required\": true,\n                \"minLength\": 2,\n                \"maxLength\": 32,\n                \"visible\": true\n            },\n            \"passengerNumber\": {\n                \"type\": \"string\",\n                \"displayType\": \"Text\",\n                \"order\": \"01\",\n                \"required\": true,\n                \"minLength\": 2,\n                \"maxLength\": 16,\n                \"visible\": true\n            },\n            \"location\": {\n                \"type\": \"string\",\n                \"displayType\": \"Text\",\n                \"order\": \"04\",\n                \"pattern\": \"^[a-zA-Z0]{2}[\\\\-][a-zA-Z0-9]+$\",\n                \"required\": true,\n                \"minLength\": 2,\n                \"maxLength\": 2,\n                \"visible\": true\n            }\n        }\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{DATASUBMISSION_API}}/organization/register",
+							"host": [
+								"{{DATASUBMISSION_API}}"
+							],
+							"path": [
+								"organization",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update organization",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code matches\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{HP_API_AUTH_TOKEN}}"
+							},
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "x-hpass-disable-appid-create-roles",
+								"type": "text",
+								"value": "false"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"entity\": \"{{DATASUBMISSION_ORG}}\",\n    \"entityType\": \"holder-upload\",\n    \"name\": \"Test organization name.\",\n    \"contact\": \"support@testorg.com\",\n    \"website\": \"https://www.testorg.com/\",\n    \"privacyPolicy\": \"https://www.testorg.com/about-us/privacy-policy\",\n    \"userAgreement\": \"TBD\",\n    \"services\": [\n        {\n            \"service\": \"upload\",\n            \"purposes\": [\n                {\n                    \"purpose\": \"TBD\"\n                }\n            ]\n        }\n    ],\n    \"consentInfo\": {\n        \"proof\": {},\n        \"version\": \"ISO/IEC 29184:2020\",\n        \"jurisdiction\": \"US\",\n        \"language\": \"en\",\n        \"piiPrincipalId\": \"PK\",\n        \"piiControllers\": [\n            {\n                \"piiController\": \"Test Org\",\n                \"onbehalf\": true,\n                \"contact\": \"John Smith, Test Org, Chief Data Privacy Officer\",\n                \"address\": {\n                    \"line\": \"12345 Rockville rd\",\n                    \"city\": \"CityName\",\n                    \"state\": \"NY\",\n                    \"postalCode\": \"12345\",\n                    \"country\": \"United States\"\n                },\n                \"email\": \"support@testorg.com\",\n                \"phone\": \"+13014964000\",\n                \"piiControllerUrl\": \"https://www.testorg.com\"\n            }\n        ],\n        \"policyUrl\": \"https://www.testorg.com/privacypolicy\",\n        \"services\": [\n            {\n                \"service\": \"TestOrg\",\n                \"purposes\": [\n                    {\n                        \"purpose\": \"purpose TBD.\",\n                        \"consentType\": \"EXPLICIT\",\n                        \"purposeCategory\": \"Validate\",\n                        \"piiCategory\": [\n                            \"Personal Data\"\n                        ],\n                        \"termination\": \"Owner-mediated via Digital Wallet\",\n                        \"thirdPartyDisclosure\": false\n                    }\n                ]\n            }\n        ],\n        \"sensitive\": false,\n        \"spiCat\": [\n            \"\"\n        ]\n    },\n    \"profileSchema\": \"TBD\",\n    \"userSchema\": \"TBD\",\n    \"displaySchema\": \"TBD\",\n    \"profileCredentialExpiry\": 31536000,\n    \"userCredentialExpiry\": 31536000,\n    \"issuerId\": \"TBD\",\n    \"mapper\": {\n        \"profileSchema\": {\n            \"name\": \"{{#? name}}\",\n            \"contact\": \"{{#? contact}}\",\n            \"website\": \"{{#? website}}\",\n            \"services\": \"{{#? services}}\",\n            \"privacyPolicy\": \"{{#? privacyPolicy}}\",\n            \"userAgreement\": \"{{#? userAgreement}}\"\n        },\n        \"userSchema\": {\n            \"name\": {\n                \"familyName\": \"{{#? familyName}}\",\n                \"givenName\": \"{{#? givenName}}\"\n            },\n            \"location\": \"{{#? location}}\",\n            \"passengerNumber\": \"{{#? passengerNumber}}\",\n            \"id\": \"{{#? id}}\",\n            \"registrationCode\": \"{{#? registrationCode}}\"\n        },\n        \"consentSchema\": {\n            \"proof\": \"{{#? proof}}\",\n            \"version\": \"{{#? version}}\",\n            \"jurisdiction\": \"{{#? jurisdiction}}\",\n            \"language\": \"{{#? language}}\",\n            \"piiPrincipalId\": \"{{#? piiPrincipalId}}\",\n            \"piiControllers\": \"{{#? piiControllers}}\",\n            \"policyUrl\": \"{{#? policyUrl}}\",\n            \"services\": \"{{#? services}}\",\n            \"sensitive\": \"{{sensitive}}\",\n            \"spiCat\": \"{{#? spiCat}}\"\n        },\n        \"consentRevokeSchema\": {\n            \"piiControllers\": \"{{#? piiControllers}}\",\n            \"services\": \"{{#? services}}\"\n        }\n    },\n    \"userRegistrationConfig\": {\n        \"org\": \"{{DATASUBMISSION_ORG}}\",\n        \"entityType\": \"holder-upload\",\n        \"flow\": {\n            \"registrationCodeAuth\": true,\n            \"mfaAuth\": false,\n            \"showUserAgreement\": true,\n            \"showRegistrationForm\": true\n        },\n        \"userAgreement\": \"<b>user agreement</b> and <i>Terms and Conditions</i> text goes here.\",\n        \"registrationForm\": {\n            \"givenName\": {\n                \"type\": \"string\",\n                \"displayType\": \"Text\",\n                \"order\": \"02\",\n                \"required\": true,\n                \"minLength\": 2,\n                \"maxLength\": 32,\n                \"visible\": true\n            },\n            \"id\": {\n                \"type\": \"string\",\n                \"displayType\": \"Text\",\n                \"visible\": false\n            },\n            \"registrationCode\": {\n                \"type\": \"string\",\n                \"displayType\": \"Text\",\n                \"visible\": false\n            },\n            \"familyName\": {\n                \"type\": \"string\",\n                \"displayType\": \"Text\",\n                \"order\": \"03\",\n                \"required\": true,\n                \"minLength\": 2,\n                \"maxLength\": 32,\n                \"visible\": true\n            },\n            \"passengerNumber\": {\n                \"type\": \"string\",\n                \"displayType\": \"Text\",\n                \"order\": \"01\",\n                \"required\": true,\n                \"minLength\": 2,\n                \"maxLength\": 16,\n                \"visible\": true\n            },\n            \"location\": {\n                \"type\": \"string\",\n                \"displayType\": \"Text\",\n                \"order\": \"04\",\n                \"pattern\": \"^[a-zA-Z0]{2}[\\\\-][a-zA-Z0-9]+$\",\n                \"required\": true,\n                \"minLength\": 2,\n                \"maxLength\": 2,\n                \"visible\": true\n            }\n        }\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{DATASUBMISSION_API}}/organization",
+							"host": [
+								"{{DATASUBMISSION_API}}"
+							],
+							"path": [
+								"organization"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get organization",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code matches\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{HP_API_AUTH_TOKEN}}"
+							},
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "x-hpass-disable-appid-create-roles",
+								"type": "text",
+								"value": "false"
+							}
+						],
+						"url": {
+							"raw": "{{DATASUBMISSION_API}}/organization/{{DATASUBMISSION_ORG}}",
+							"host": [
+								"{{DATASUBMISSION_API}}"
+							],
+							"path": [
+								"organization",
+								"{{DATASUBMISSION_ORG}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get organization reg config",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code matches\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{HP_API_AUTH_TOKEN}}"
+							},
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "x-hpass-disable-appid-create-roles",
+								"type": "text",
+								"value": "false"
+							}
+						],
+						"url": {
+							"raw": "{{DATASUBMISSION_API}}/organization/{{DATASUBMISSION_ORG}}/regconfig",
+							"host": [
+								"{{DATASUBMISSION_API}}"
+							],
+							"path": [
+								"organization",
+								"{{DATASUBMISSION_ORG}}",
+								"regconfig"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Register APPID users (Admin)",
+			"item": [
+				{
+					"name": "register reg admin and test admin appid users",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"DES Download - register reg admin and test admin appid users\", function () {",
+									"    pm.response.to.have.status(201);",
+									"",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property(\"regAdminGUID\");",
+									"    pm.environment.set(\"regAdminGUID\", jsonData.regAdminGUID);",
+									"    pm.expect(jsonData).to.have.property(\"testAdminGUID\");",
+									"    pm.environment.set(\"testAdminGUID\", jsonData.testAdminGUID);",
+									"    pm.expect(jsonData).to.have.property(\"dataAdminGUID\");",
+									"    pm.environment.set(\"dataAdminGUID\", jsonData.dataAdminGUID);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "{{HP_API_AUTH_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"organization\": \"{{DATASUBMISSION_ORG}}\",\n    \"regAdminPassword\": \"Testing123*\",\n    \"testAdminPassword\": \"Testing123*\",\n    \"dataAdminPassword\": \"Testing123*\"\n}"
+						},
+						"url": {
+							"raw": "{{DATASUBMISSION_API}}/test/appid/users",
+							"host": [
+								"{{DATASUBMISSION_API}}"
+							],
+							"path": [
+								"test",
+								"appid",
+								"users"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "register-code (Admin)",
+			"item": [
+				{
+					"name": "generate registerration code",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{HP_API_AUTH_TOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{DATASUBMISSION_API}}/register-code/{{DATASUBMISSION_ORG}}/generate/1",
+							"host": [
+								"{{DATASUBMISSION_API}}"
+							],
+							"path": [
+								"register-code",
+								"{{DATASUBMISSION_ORG}}",
+								"generate",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "upload registerration code",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{HP_API_AUTH_TOKEN}}"
+							},
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"registrationCodes\": [ \"{{uuidCodeValid1}}\", \"{{uuidCodeValid2}}\" ]\n}"
+						},
+						"url": {
+							"raw": "{{DATASUBMISSION_API}}/register-code/{{DATASUBMISSION_ORG}}/upload",
+							"host": [
+								"{{DATASUBMISSION_API}}"
+							],
+							"path": [
+								"register-code",
+								"{{DATASUBMISSION_ORG}}",
+								"upload"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "validate-register-code (Wallet APP)",
+			"item": [
+				{
+					"name": "validate code with supported org and valid code",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(function(){}, 1000);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"DES Upload - Status code and message matches\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{HP_API_AUTH_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{DATASUBMISSION_API}}/onboarding/{{DATASUBMISSION_ORG}}/validatecode/{{uuidCodeValid1}}",
+							"host": [
+								"{{DATASUBMISSION_API}}"
+							],
+							"path": [
+								"onboarding",
+								"{{DATASUBMISSION_ORG}}",
+								"validatecode",
+								"{{uuidCodeValid1}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "onboarding (Wallet APP)",
+			"item": [
+				{
+					"name": "onboard user with supported org",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(function(){}, 1000);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"DES Upload -  onboard user with supporte4d org\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"holderCredential\", JSON.stringify(jsonData.payload[1]));",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "{{HP_API_AUTH_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"organization\": \"{{DATASUBMISSION_ORG}}\",\n    \"registrationCode\": \"{{uuidCodeValid1}}\",\n    \"id\": \"{{uuidKey1}}\",\n    \"givenName\": \"chandra\",\n    \"familyName\": \"maduri\",\n    \"passengerNumber\": \"12345\",\n    \"location\": \"US-TX\"\n}"
+						},
+						"url": {
+							"raw": "{{DATASUBMISSION_API}}/onboarding",
+							"host": [
+								"{{DATASUBMISSION_API}}"
+							],
+							"path": [
+								"onboarding"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Data(need preprocess to test) -(Wallet APP)",
+			"item": [
+				{
+					"name": "Upload document",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Create document\", function () {",
+									"    pm.response.to.have.status(201);",
+									"",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.environment.set(\"stdocid\", jsonData.payload.id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{HP_API_AUTH_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"content\": \"encrypted json [user-id-credentials+credentials-one-or-many+consent]\",\n    \"password\": \"profile-credential.data.techenical.upload.passcode\",\n    \"link\": \"profile-credential.data.techenical.upload.linkId\",\n    \"name\": \"Need to check with gautham on comment he is adding\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{POSTBOX-API}}/api/v1/documents",
+							"host": [
+								"{{POSTBOX-API}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"documents"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Submit data with supported org",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(function(){}, 1000);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code and message matches\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect(pm.response.text()).to.include(\"payload\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "{{HP_API_AUTH_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"organization\": \"{{DATASUBMISSION_ORG}}\",\n  \"publicKey\": \"MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwHt+e6lS+zFGueOFRSa1Z/dUCYynSbSAf4GIevyV1pW2g5Mgs6v8jUNYECRBuk75zFVj8cc7I1+aN93AL1hAIkTNKLst3saCAY+tQHWxBj3a3POeBI2NyP0MWyCwN54C3HTHuHwPn+dm04NouLXCbBWRAUdybXvkDp1N9DrjkSTNc046pXtowLeNUjNPXuX9zeLL4uGRlhgdRjuNymifqu6p8L4VQFREKcdvUjo4BfS/4xSq/hev7JEsNiqkNB39KVVi5hqlqjM1QAhzXoqJVmVUHvm5IiF5a3z+0CABx3OH8fGYwijlSByGdvDIwk/ywfU64xAeSvHDA0ETmureZQIDAQAB\",\n  \"publicKeyType\": \"spki\",\n  \"documentId\": \"response-from-step4-request\"\n}"
+						},
+						"url": {
+							"raw": "{{DATASUBMISSION_API}}/data/submit",
+							"host": [
+								"{{DATASUBMISSION_API}}"
+							],
+							"path": [
+								"data",
+								"submit"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Submit Data (test route) - (Developer)",
+			"item": [
+				{
+					"name": "create temperature scan credential",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"DES Upload - Create Temperature Scan Credential\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    var tempScanCred = JSON.stringify(jsonData.payload);",
+									"",
+									"    pm.response.to.have.status(200);",
+									"",
+									"    pm.environment.set(\"temperatureScanCredential\", tempScanCred);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {}
+					},
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{HP_API_AUTH_TOKEN}}"
+							},
+							{
+								"key": "{{ISSUER_ID_HEADER}}",
+								"value": "{{ISSUER_ID}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"schemaID\": \"{{TEMP_SCHEMA_ID}}\",\n    \"data\": {\n        \"type\": \"Temperature\",\n        \"id\": \"test-holder-id\",\n        \"date\": \"2021-01-06T23:54:34-05:00\",\n        \"temperature\": \"101.0\",\n        \"units\": \"F\",\n        \"display\": \"#FF0000\"\n    },\n    \"expirationDate\": \"2025-02-17T00:00:00Z\"\n}"
+						},
+						"url": {
+							"raw": "{{HEALTHPASS_API}}/credentials",
+							"host": [
+								"{{HEALTHPASS_API}}"
+							],
+							"path": [
+								"credentials"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "create daily healthpass credential",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"DES Upload - Create Daily HealthPass Credential\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    var dailyHPCred = JSON.stringify(jsonData.payload);",
+									"",
+									"    pm.response.to.have.status(200);",
+									"",
+									"    pm.environment.set(\"dailyHPCredential\", dailyHPCred);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {}
+					},
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{HP_API_AUTH_TOKEN}}"
+							},
+							{
+								"key": "{{ISSUER_ID_HEADER}}",
+								"value": "{{WSSC_ISSUER_ID}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"schemaID\": \"{{DAILY_HEALTHPASS_SCHEMA_ID}}\",\n    \"data\": {\n        \"type\": \"IBM Digital Health Pass\",\n        \"id\": \"test-holder-1\",\n        \"score\": 10,\n        \"display\": \"#FF0000\"\n    },\n    \"expirationDate\": \"2021-12-17T00:00:00Z\"\n}"
+						},
+						"url": {
+							"raw": "{{HEALTHPASS_API}}/credentials",
+							"host": [
+								"{{HEALTHPASS_API}}"
+							],
+							"path": [
+								"credentials"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "create consent receipt",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"DES Upload - Create consent\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    var consentReceipt = JSON.stringify(jsonData.payload);",
+									"",
+									"    pm.response.to.have.status(200);",
+									"",
+									"    pm.environment.set(\"consentReceipt\", consentReceipt);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{HP_API_AUTH_TOKEN}}"
+							}
+						],
+						"url": {
+							"raw": "{{DATASUBMISSION_API}}/organization/{{DATASUBMISSION_ORG}}/consentReceipt/1234",
+							"host": [
+								"{{DATASUBMISSION_API}}"
+							],
+							"path": [
+								"organization",
+								"{{DATASUBMISSION_ORG}}",
+								"consentReceipt",
+								"1234"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "submit data (test route) - temperature scan",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(function(){}, 1000);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"DES Upload - Submit Data\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    ",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"temperatureCosFileName\", jsonData.cosFileName);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{HP_API_AUTH_TOKEN}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"organization\": \"{{DATASUBMISSION_ORG}}\",\n    \"credential\": {{temperatureScanCredential}},\n    \"givenName\": \"chandra\",\n    \"familyName\": \"maduri\",\n    \"passengerNumber\": \"12345\",\n    \"location\": \"US-TX\",\n    \"publicKeyType\": \"pkcs1\"\n}"
+						},
+						"url": {
+							"raw": "{{DATASUBMISSION_API}}/test/data/submit",
+							"host": [
+								"{{DATASUBMISSION_API}}"
+							],
+							"path": [
+								"test",
+								"data",
+								"submit"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "submit data (test route) - daily health pass",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(function(){}, 1000);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"DES Upload - Submit Data\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    ",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"dailyHPCosFileName\", jsonData.cosFileName);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{HP_API_AUTH_TOKEN}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"organization\": \"{{DATASUBMISSION_ORG}}\",\n    \"credential\": {{dailyHPCredential}},\n    \"givenName\": \"chandra\",\n    \"familyName\": \"maduri\",\n    \"passengerNumber\": \"12345\",\n    \"location\": \"US-TX\",\n    \"publicKeyType\": \"pkcs1\"\n}"
+						},
+						"url": {
+							"raw": "{{DATASUBMISSION_API}}/test/data/submit",
+							"host": [
+								"{{DATASUBMISSION_API}}"
+							],
+							"path": [
+								"test",
+								"data",
+								"submit"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Process Data (Admin)",
+			"item": [
+				{
+					"name": "get cos filenames",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(function(){}, 1000);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"DES Upload - Get COS Files\", function () {",
+									"    pm.response.to.have.status(200);",
+									"",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.payload).to.have.length.greaterThan(1);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{HP_API_AUTH_TOKEN}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{DATASUBMISSION_API}}/cos/{{DATASUBMISSION_ORG}}",
+							"host": [
+								"{{DATASUBMISSION_API}}"
+							],
+							"path": [
+								"cos",
+								"{{DATASUBMISSION_ORG}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get cos file - temperature scan",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(function(){}, 1000);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"DES Upload - Get COS File temperature scan\", function () {",
+									"    pm.response.to.have.status(200);",
+									"",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.lengthOf(3);",
+									"    pm.expect(jsonData[0]).to.have.property('consentReceiptID');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{HP_API_AUTH_TOKEN}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{DATASUBMISSION_API}}/cos/{{DATASUBMISSION_ORG}}/{{temperatureCosFileName}}",
+							"host": [
+								"{{DATASUBMISSION_API}}"
+							],
+							"path": [
+								"cos",
+								"{{DATASUBMISSION_ORG}}",
+								"{{temperatureCosFileName}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get cos file - daily health pass",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(function(){}, 1000);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"DES Upload - Get COS File - daily health pass\", function () {",
+									"    pm.response.to.have.status(200);",
+									"",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.lengthOf(3);",
+									"    pm.expect(jsonData[0]).to.have.property('consentReceiptID');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{HP_API_AUTH_TOKEN}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{DATASUBMISSION_API}}/cos/{{DATASUBMISSION_ORG}}/{{dailyHPCosFileName}}",
+							"host": [
+								"{{DATASUBMISSION_API}}"
+							],
+							"path": [
+								"cos",
+								"{{DATASUBMISSION_ORG}}",
+								"{{dailyHPCosFileName}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete cos file - temperature scan",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(function(){}, 1000);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"DES Upload - Delete COS File, temperature scan\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{HP_API_AUTH_TOKEN}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{DATASUBMISSION_API}}/cos/{{DATASUBMISSION_ORG}}/{{temperatureCosFileName}}",
+							"host": [
+								"{{DATASUBMISSION_API}}"
+							],
+							"path": [
+								"cos",
+								"{{DATASUBMISSION_ORG}}",
+								"{{temperatureCosFileName}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete cos file - daily health pass",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(function(){}, 1000);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"DES Upload - Delete COS File, Daily Health Pass\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{HP_API_AUTH_TOKEN}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{DATASUBMISSION_API}}/cos/{{DATASUBMISSION_ORG}}/{{dailyHPCosFileName}}",
+							"host": [
+								"{{DATASUBMISSION_API}}"
+							],
+							"path": [
+								"cos",
+								"{{DATASUBMISSION_ORG}}",
+								"{{dailyHPCosFileName}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Offboard holder (Admin)",
+			"item": [
+				{
+					"name": "offboard user with supported org",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(function(){}, 1000);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"DES Upload -  offboard user with supported org\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{HP_API_AUTH_TOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "{{DATASUBMISSION_KEY_HEADER}}",
+								"type": "text",
+								"value": "{{uuidKey1}}"
+							}
+						],
+						"url": {
+							"raw": "{{DATASUBMISSION_API}}/onboarding/{{DATASUBMISSION_ORG}}",
+							"host": [
+								"{{DATASUBMISSION_API}}"
+							],
+							"path": [
+								"onboarding",
+								"{{DATASUBMISSION_ORG}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Offboard APPID users (Admin)",
+			"item": [
+				{
+					"name": "delete reg admin and test admin appid users",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code and error matches\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{HP_API_AUTH_TOKEN}}"
+							},
+							{
+								"key": "x-hpass-disable-appid-role-creation",
+								"type": "text",
+								"value": "true"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"regAdminGUID\": \"{{regAdminGUID}}\",\n    \"testAdminGUID\": \"{{testAdminGUID}}\",\n    \"dataAdminGUID\": \"{{dataAdminGUID}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{DATASUBMISSION_API}}/test/appid/users",
+							"host": [
+								"{{DATASUBMISSION_API}}"
+							],
+							"path": [
+								"test",
+								"appid",
+								"users"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Offboard Organization (Admin)",
+			"item": [
+				{
+					"name": "offboard supported organization",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code and error matches\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{HP_API_AUTH_TOKEN}}"
+							},
+							{
+								"key": "x-hpass-disable-appid-delete-roles",
+								"value": "true",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{DATASUBMISSION_API}}/organization/{{DATASUBMISSION_ORG}}",
+							"host": [
+								"{{DATASUBMISSION_API}}"
+							],
+							"path": [
+								"organization",
+								"{{DATASUBMISSION_ORG}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
